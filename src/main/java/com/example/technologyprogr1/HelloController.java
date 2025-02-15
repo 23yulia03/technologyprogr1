@@ -3,7 +3,6 @@ package com.example.technologyprogr1;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
-import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.Cell;
@@ -25,7 +24,7 @@ public class HelloController {
     private Label folderPathLabel;
 
     private StringBuilder fileList = new StringBuilder();
-    private File saveFolder;
+    private File outputFile; // Файл для сохранения результата
     private Stage stage;
 
     public void setStage(Stage stage) {
@@ -46,46 +45,37 @@ public class HelloController {
         }
     }
 
-    private void analyzeFileStructure(List<File> files) {
-        int columnCount = 0;
-        boolean hasEmptyCells = false;
+    @FXML
+    protected void onSelectFolder() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Выберите место сохранения и имя файла");
 
-        for (File file : files) {
-            if (file.getName().endsWith(".xlsx")) {
-                try (FileInputStream fis = new FileInputStream(file);
-                     Workbook workbook = new XSSFWorkbook(fis)) {
-
-                    Sheet sheet = workbook.getSheetAt(0);
-                    for (Row row : sheet) {
-                        columnCount = Math.max(columnCount, row.getLastCellNum());
-                        for (Cell cell : row) {
-                            if (false) {
-                                hasEmptyCells = true;
-                            }
-                        }
-                    }
-                } catch (IOException e) {
-                    showAlert("Ошибка анализа", "Не удалось проанализировать файл " + file.getName());
-                }
+        // Устанавливаем начальное имя файла
+        if (fileList.length() > 0) {
+            String firstFileName = fileList.toString().split("\n")[0];
+            if (firstFileName.endsWith(".docx")) {
+                fileChooser.setInitialFileName(firstFileName.replace(".docx", ".xlsx")); // Для Word → Excel
+            } else if (firstFileName.endsWith(".xlsx")) {
+                fileChooser.setInitialFileName("Результат.docx"); // Для Excel → Word
             }
         }
 
-        showAlert("Анализ завершен", "Обнаружено " + columnCount + " столбцов. Пустые ячейки: " + (hasEmptyCells ? "Да" : "Нет"));
-    }
+        // Фильтры для выбора расширения файла
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Word Documents (*.docx)", "*.docx"),
+                new FileChooser.ExtensionFilter("Excel Files (*.xlsx)", "*.xlsx")
+        );
 
-    @FXML
-    protected void onSelectFolder() {
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        saveFolder = directoryChooser.showDialog(stage);
-        if (saveFolder != null) {
-            folderPathLabel.setText("Папка для сохранения: " + saveFolder.getAbsolutePath());
+        outputFile = fileChooser.showSaveDialog(stage);
+        if (outputFile != null) {
+            folderPathLabel.setText("Файл будет сохранен как: " + outputFile.getAbsolutePath());
         }
     }
 
     @FXML
     protected void onConvert() {
-        if (fileList.length() == 0 || saveFolder == null) {
-            showAlert("Ошибка", "Выберите файлы и папку для сохранения");
+        if (fileList.length() == 0 || outputFile == null) {
+            showAlert("Ошибка", "Выберите файлы и укажите имя файла для сохранения");
             return;
         }
 
@@ -117,14 +107,14 @@ public class HelloController {
 
     @FXML
     protected void onOpenFile() {
-        if (saveFolder != null && Desktop.isDesktopSupported()) {
+        if (outputFile != null && Desktop.isDesktopSupported()) {
             try {
-                Desktop.getDesktop().open(saveFolder);
+                Desktop.getDesktop().open(outputFile.getParentFile()); // Открываем папку с результатом
             } catch (IOException e) {
                 showAlert("Ошибка", "Не удалось открыть папку");
             }
         } else {
-            showAlert("Ошибка", "Папка не выбрана или не поддерживается");
+            showAlert("Ошибка", "Файл не выбран или не поддерживается");
         }
     }
 
@@ -142,7 +132,8 @@ public class HelloController {
             File wordFile = new File(filePath);
             if (!wordFile.getName().endsWith(".docx")) continue;
 
-            File excelFile = new File(saveFolder, wordFile.getName().replace(".docx", ".xlsx"));
+            // Используем outputFile для сохранения
+            File excelFile = new File(outputFile.getParent(), outputFile.getName());
 
             try (FileInputStream fis = new FileInputStream(wordFile);
                  XWPFDocument document = new XWPFDocument(fis);
@@ -165,10 +156,10 @@ public class HelloController {
 
     private void convertExcelToWord() throws IOException {
         String[] filePaths = fileList.toString().split("\n");
-        File wordFile = new File(saveFolder, "Результат.docx");
 
+        // Используем outputFile для сохранения
         try (XWPFDocument document = new XWPFDocument();
-             FileOutputStream fos = new FileOutputStream(wordFile)) {
+             FileOutputStream fos = new FileOutputStream(outputFile)) {
             for (String filePath : filePaths) {
                 File excelFile = new File(filePath);
                 if (!excelFile.getName().endsWith(".xlsx")) continue;
