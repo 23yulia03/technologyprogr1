@@ -46,6 +46,33 @@ public class HelloController {
         }
     }
 
+    private void analyzeFileStructure(List<File> files) {
+        int columnCount = 0;
+        boolean hasEmptyCells = false;
+
+        for (File file : files) {
+            if (file.getName().endsWith(".xlsx")) {
+                try (FileInputStream fis = new FileInputStream(file);
+                     Workbook workbook = new XSSFWorkbook(fis)) {
+
+                    Sheet sheet = workbook.getSheetAt(0);
+                    for (Row row : sheet) {
+                        columnCount = Math.max(columnCount, row.getLastCellNum());
+                        for (Cell cell : row) {
+                            if (false) {
+                                hasEmptyCells = true;
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    showAlert("Ошибка анализа", "Не удалось проанализировать файл " + file.getName());
+                }
+            }
+        }
+
+        showAlert("Анализ завершен", "Обнаружено " + columnCount + " столбцов. Пустые ячейки: " + (hasEmptyCells ? "Да" : "Нет"));
+    }
+
     @FXML
     protected void onSelectFolder() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
