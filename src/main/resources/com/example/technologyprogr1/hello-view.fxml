@@ -2,15 +2,34 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Pos?>
 
-<VBox alignment="CENTER" prefHeight="336.0" prefWidth="487.0" spacing="15" style="-fx-background-color: #f0f0f0; -fx-padding: 20;" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.technologyprogr1.HelloController">
-    <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #333;" text="Конвертер Word ↔ Excel" />
+<VBox alignment="CENTER" prefHeight="400.0" prefWidth="500.0" spacing="20" style="-fx-background-color: #ffffff; -fx-padding: 30;" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.technologyprogr1.HelloController">
+    <!-- Заголовок -->
+    <Label style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333333; -fx-margin-bottom: 20px;" text="Конвертер Word ↔ Excel" />
 
-    <Button onAction="#onSelectFiles" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Выбрать файлы" />
-    <Button onAction="#onSelectFolder" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Выбрать папку для сохранения" />
-    <Button onAction="#onConvert" style="-fx-background-color: #FF9800; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Начать конвертацию" />
-    <Button onAction="#onOpenFile" style="-fx-background-color: #9C27B0; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Открыть папку с результатами" />
+    <!-- Раздел выбора файлов -->
+    <VBox spacing="15" alignment="CENTER" style="-fx-background-color: #f0f0f0; -fx-padding: 15; -fx-border-radius: 10; -fx-background-radius: 10;">
+        <Label style="-fx-font-size: 16px; -fx-text-fill: #555555;" text="Шаг 1: Выберите файлы для конвертации:" />
+        <Button onAction="#onSelectFiles" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Выбрать файлы" />
+        <Label fx:id="fileListLabel" style="-fx-font-size: 14px; -fx-text-fill: #555;" text="Выбранные файлы: Нет файлов" />
+    </VBox>
 
-    <Label fx:id="fileListLabel" style="-fx-font-size: 14px; -fx-text-fill: #555;" text="Выбранные файлы:" />
-    <Label fx:id="folderPathLabel" style="-fx-font-size: 14px; -fx-text-fill: #555;" text="Папка для сохранения:" />
+    <!-- Раздел выбора папки для сохранения -->
+    <VBox spacing="15" alignment="CENTER" style="-fx-background-color: #f0f0f0; -fx-padding: 15; -fx-border-radius: 10; -fx-background-radius: 10;">
+        <Label style="-fx-font-size: 16px; -fx-text-fill: #555555;" text="Шаг 2: Выберите папку для сохранения:" />
+        <Button onAction="#onSelectFolder" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Выбрать папку" />
+        <Label fx:id="folderPathLabel" style="-fx-font-size: 14px; -fx-text-fill: #555;" text="Папка для сохранения: Не выбрана" />
+    </VBox>
+
+    <!-- Раздел с действиями -->
+    <VBox spacing="15" alignment="CENTER">
+        <Button onAction="#onConvert" style="-fx-background-color: #FF9800; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Начать конвертацию" />
+        <Button onAction="#onOpenFile" style="-fx-background-color: #9C27B0; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Открыть папку с результатами" />
+    </VBox>
+
+    <!-- Подсказки и пояснения -->
+    <HBox spacing="10" alignment="CENTER">
+        <Label style="-fx-font-size: 14px; -fx-text-fill: #888;" text="Чтобы начать конвертацию, выберите файлы и папку для сохранения." />
+    </HBox>
 </VBox>

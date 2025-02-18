@@ -2,18 +2,16 @@ package com.example.technologyprogr1;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.Cell;
+import javafx.scene.control.Label;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xwpf.usermodel.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.awt.Desktop;
+import java.awt.*;
+import java.io.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +22,7 @@ public class HelloController {
     private Label folderPathLabel;
 
     private StringBuilder fileList = new StringBuilder();
-    private File outputFile; // Файл для сохранения результата
+    private File outputFile;
     private Stage stage;
 
     public void setStage(Stage stage) {
@@ -34,7 +32,7 @@ public class HelloController {
     @FXML
     protected void onSelectFiles() {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Word & Excel Files", "*.docx", "*.xlsx"));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel Files", "*.xlsx"));
         List<File> files = fileChooser.showOpenMultipleDialog(stage);
         if (files != null) {
             fileList.setLength(0);
@@ -49,21 +47,10 @@ public class HelloController {
     protected void onSelectFolder() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Выберите место сохранения и имя файла");
-
-        // Устанавливаем начальное имя файла
-        if (fileList.length() > 0) {
-            String firstFileName = fileList.toString().split("\n")[0];
-            if (firstFileName.endsWith(".docx")) {
-                fileChooser.setInitialFileName(firstFileName.replace(".docx", ".xlsx")); // Для Word → Excel
-            } else if (firstFileName.endsWith(".xlsx")) {
-                fileChooser.setInitialFileName("Результат.docx"); // Для Excel → Word
-            }
-        }
-
-        // Фильтры для выбора расширения файла
+        fileChooser.setInitialFileName("Результат.xlsx");
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Word Documents (*.docx)", "*.docx"),
-                new FileChooser.ExtensionFilter("Excel Files (*.xlsx)", "*.xlsx")
+                new FileChooser.ExtensionFilter("Excel Files (*.xlsx)", "*.xlsx"),
+                new FileChooser.ExtensionFilter("Word Documents (*.docx)", "*.docx")
         );
 
         outputFile = fileChooser.showSaveDialog(stage);
@@ -79,130 +66,100 @@ public class HelloController {
             return;
         }
 
-        // Запрос направления конвертации
-        List<String> choices = List.of("Word → Excel", "Excel → Word");
+        List<String> choices = List.of("Excel → Excel", "Excel → Word");
         ChoiceDialog<String> dialog = new ChoiceDialog<>(choices.get(0), choices);
         dialog.setTitle("Выбор формата");
-        dialog.setHeaderText("Выберите направление конвертации:");
-        dialog.setContentText("Конвертировать:");
+        dialog.setHeaderText("Выберите формат итогового файла:");
+        dialog.setContentText("Формат:");
 
         Optional<String> result = dialog.showAndWait();
-        if (result.isEmpty()) {
-            return; // Пользователь отменил выбор
-        }
+        if (result.isEmpty()) return;
 
-        String conversionType = result.get();
         try {
-            if ("Word → Excel".equals(conversionType)) {
-                convertWordToExcel();
+            if ("Excel → Excel".equals(result.get())) {
+                mergeExcelFiles();
             } else {
                 convertExcelToWord();
             }
-            showAlert("Готово", "Конвертация завершена!");
+            showAlert("Готово", "Файл успешно создан!");
         } catch (IOException e) {
-            showAlert("Ошибка", "Ошибка при конвертации: " + e.getMessage());
+            showAlert("Ошибка", "Ошибка при обработке: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    @FXML
-    protected void onOpenFile() {
-        if (outputFile != null && Desktop.isDesktopSupported()) {
-            try {
-                Desktop.getDesktop().open(outputFile.getParentFile()); // Открываем папку с результатом
-            } catch (IOException e) {
-                showAlert("Ошибка", "Не удалось открыть папку");
-            }
-        } else {
-            showAlert("Ошибка", "Файл не выбран или не поддерживается");
-        }
-    }
-
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    private void convertWordToExcel() throws IOException {
+    private void mergeExcelFiles() throws IOException {
         String[] filePaths = fileList.toString().split("\n");
-        for (String filePath : filePaths) {
-            File wordFile = new File(filePath);
-            if (!wordFile.getName().endsWith(".docx")) continue;
 
-            // Используем outputFile для сохранения
-            File excelFile = new File(outputFile.getParent(), outputFile.getName());
+        // Создаём новый Workbook для объединения
+        try (Workbook mergedWorkbook = new XSSFWorkbook(); FileOutputStream fos = new FileOutputStream(outputFile)) {
 
-            try (FileInputStream fis = new FileInputStream(wordFile);
-                 XWPFDocument document = new XWPFDocument(fis);
-                 Workbook workbook = new XSSFWorkbook()) {
+            // Создаём новый лист для данных
+            Sheet mergedSheet = mergedWorkbook.createSheet("Объединённые данные");
 
-                Sheet sheet = workbook.createSheet("Word Content");
-                int rowIndex = 0;
+            int rowIndex = 0; // Индекс для строк в mergedSheet
 
-                // Обрабатываем таблицы в Word
-                for (XWPFTable table : document.getTables()) {
-                    for (XWPFTableRow row : table.getRows()) {
-                        Row excelRow = sheet.createRow(rowIndex++);
-                        int cellIndex = 0;
+            for (String filePath : filePaths) {
+                File excelFile = new File(filePath);
+                try (FileInputStream fis = new FileInputStream(excelFile); Workbook workbook = new XSSFWorkbook(fis)) {
 
-                        for (XWPFTableCell cell : row.getTableCells()) {
-                            Cell excelCell = excelRow.createCell(cellIndex++);
-                            excelCell.setCellValue(cell.getText());
+                    // Пройдем по всем листам текущего файла
+                    for (Sheet sheet : workbook) {
+
+                        // Пройдем по всем строкам в текущем листе
+                        for (Row row : sheet) {
+                            Row newRow = mergedSheet.createRow(rowIndex++);
+
+                            // Копируем данные из каждой ячейки
+                            for (org.apache.poi.ss.usermodel.Cell cell : row) {
+                                org.apache.poi.ss.usermodel.Cell newCell = newRow.createCell(cell.getColumnIndex());
+
+                                // В зависимости от типа ячейки копируем данные
+                                switch (cell.getCellType()) {
+                                    case STRING:
+                                        newCell.setCellValue(cell.getStringCellValue());
+                                        break;
+                                    case NUMERIC:
+                                        newCell.setCellValue(cell.getNumericCellValue());
+                                        break;
+                                    case BOOLEAN:
+                                        newCell.setCellValue(cell.getBooleanCellValue());
+                                        break;
+                                    case FORMULA:
+                                        newCell.setCellFormula(cell.getCellFormula());
+                                        break;
+                                    case BLANK:
+                                        // Если ячейка пустая, не нужно ничего делать
+                                        break;
+                                    default:
+                                        throw new IllegalArgumentException("Неизвестный тип ячейки: " + cell.getCellType());
+                                }
+                            }
                         }
                     }
                 }
-
-                // Обрабатываем обычные абзацы, если таблиц нет
-                if (document.getTables().isEmpty()) {
-                    for (XWPFParagraph paragraph : document.getParagraphs()) {
-                        Row excelRow = sheet.createRow(rowIndex++);
-                        Cell excelCell = excelRow.createCell(0);
-                        excelCell.setCellValue(paragraph.getText());
-                    }
-                }
-
-                try (FileOutputStream fos = new FileOutputStream(excelFile)) {
-                    workbook.write(fos);
-                }
             }
+
+            // Записываем объединённую книгу в файл
+            mergedWorkbook.write(fos);
         }
     }
 
+
     private void convertExcelToWord() throws IOException {
         String[] filePaths = fileList.toString().split("\n");
-
-        // Используем outputFile для сохранения
-        try (XWPFDocument document = new XWPFDocument();
-             FileOutputStream fos = new FileOutputStream(outputFile)) {
+        try (XWPFDocument document = new XWPFDocument(); FileOutputStream fos = new FileOutputStream(outputFile)) {
             for (String filePath : filePaths) {
                 File excelFile = new File(filePath);
-                if (!excelFile.getName().endsWith(".xlsx")) continue;
-
-                try (FileInputStream fis = new FileInputStream(excelFile);
-                     Workbook workbook = new XSSFWorkbook(fis)) {
-
+                try (FileInputStream fis = new FileInputStream(excelFile); Workbook workbook = new XSSFWorkbook(fis)) {
                     for (Sheet sheet : workbook) {
-                        // Создаем таблицу в Word
+                        document.createParagraph().createRun().setText("Таблица: " + sheet.getSheetName());
                         XWPFTable table = document.createTable();
-
-                        // Проходим по строкам Excel
                         for (Row row : sheet) {
-                            // Создаем новую строку в таблице Word
                             XWPFTableRow tableRow = table.createRow();
-
-                            // Проходим по ячейкам Excel
-                            for (Cell cell : row) {
-                                // Добавляем ячейку в строку таблицы Word
-                                XWPFTableCell tableCell = tableRow.getCell(cell.getColumnIndex());
-                                if (tableCell == null) {
-                                    tableCell = tableRow.addNewTableCell();
-                                }
-
-                                // Записываем значение ячейки Excel в ячейку таблицы Word
-                                tableCell.setText(cell.toString());
+                            for (org.apache.poi.ss.usermodel.Cell cell : row) {
+                                XWPFTableCell tableCell = tableRow.createCell(); // создаем ячейку в строке таблицы
+                                tableCell.setText(cell.toString()); // Преобразуем ячейку в текст
                             }
                         }
                     }
@@ -210,5 +167,29 @@ public class HelloController {
             }
             document.write(fos);
         }
+    }
+
+
+    @FXML
+    protected void onOpenFile() {
+        if (outputFile != null && outputFile.exists()) {
+            try {
+                // Открываем папку, содержащую файл, с помощью стандартного приложения системы
+                Desktop.getDesktop().open(outputFile.getParentFile());
+            } catch (IOException e) {
+                showAlert("Ошибка", "Не удалось открыть папку: " + e.getMessage());
+            }
+        } else {
+            showAlert("Ошибка", "Файл не существует.");
+        }
+    }
+
+
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }
