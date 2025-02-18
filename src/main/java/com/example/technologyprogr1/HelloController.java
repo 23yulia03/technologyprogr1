@@ -164,6 +164,7 @@ public class HelloController {
 
     private void convertExcelToWord() throws IOException {
         String[] filePaths = fileList.toString().split("\n");
+
         try (XWPFDocument document = new XWPFDocument(); FileOutputStream fos = new FileOutputStream(outputFile)) {
             for (String filePath : filePaths) {
                 File excelFile = new File(filePath);
@@ -171,11 +172,16 @@ public class HelloController {
                     for (Sheet sheet : workbook) {
                         document.createParagraph().createRun().setText("Таблица: " + sheet.getSheetName());
                         XWPFTable table = document.createTable();
+
                         for (Row row : sheet) {
                             XWPFTableRow tableRow = table.createRow();
+
+                            // Удаляем автоматически созданную первую ячейку
+                            tableRow.getTableCells().clear();
+
                             for (org.apache.poi.ss.usermodel.Cell cell : row) {
-                                XWPFTableCell tableCell = tableRow.createCell(); // создаем ячейку в строке таблицы
-                                tableCell.setText(cell.toString()); // Преобразуем ячейку в текст
+                                XWPFTableCell tableCell = tableRow.addNewTableCell(); // Создаём новую ячейку
+                                tableCell.setText(cell.toString().trim()); // Убираем лишние пробелы
                             }
                         }
                     }
@@ -184,6 +190,7 @@ public class HelloController {
             document.write(fos);
         }
     }
+
 
 
     @FXML
