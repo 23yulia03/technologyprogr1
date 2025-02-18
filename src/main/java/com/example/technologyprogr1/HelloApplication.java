@@ -9,8 +9,8 @@ public class HelloApplication extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("hello-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 800, 800);
-        primaryStage.setTitle("Конвертер Word ↔ Excel");
+        Scene scene = new Scene(fxmlLoader.load(), 750, 750);
+        primaryStage.setTitle("Конвертер Excel в Excel/Word");
         primaryStage.setScene(scene);
         primaryStage.show();
     }

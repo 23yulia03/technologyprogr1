@@ -98,6 +98,7 @@ public class HelloController {
             Sheet mergedSheet = mergedWorkbook.createSheet("Объединённые данные");
 
             int rowIndex = 0; // Индекс для строк в mergedSheet
+            boolean isHeaderCopied = false; // Флаг для отслеживания, был ли заголовок уже скопирован
 
             for (String filePath : filePaths) {
                 File excelFile = new File(filePath);
@@ -106,35 +107,21 @@ public class HelloController {
                     // Пройдем по всем листам текущего файла
                     for (Sheet sheet : workbook) {
 
-                        // Пройдем по всем строкам в текущем листе
-                        for (Row row : sheet) {
-                            Row newRow = mergedSheet.createRow(rowIndex++);
-
-                            // Копируем данные из каждой ячейки
-                            for (org.apache.poi.ss.usermodel.Cell cell : row) {
-                                org.apache.poi.ss.usermodel.Cell newCell = newRow.createCell(cell.getColumnIndex());
-
-                                // В зависимости от типа ячейки копируем данные
-                                switch (cell.getCellType()) {
-                                    case STRING:
-                                        newCell.setCellValue(cell.getStringCellValue());
-                                        break;
-                                    case NUMERIC:
-                                        newCell.setCellValue(cell.getNumericCellValue());
-                                        break;
-                                    case BOOLEAN:
-                                        newCell.setCellValue(cell.getBooleanCellValue());
-                                        break;
-                                    case FORMULA:
-                                        newCell.setCellFormula(cell.getCellFormula());
-                                        break;
-                                    case BLANK:
-                                        // Если ячейка пустая, не нужно ничего делать
-                                        break;
-                                    default:
-                                        throw new IllegalArgumentException("Неизвестный тип ячейки: " + cell.getCellType());
-                                }
+                        // Если заголовок еще не скопирован, копируем первую строку
+                        if (!isHeaderCopied) {
+                            Row headerRow = sheet.getRow(0); // Первая строка - это заголовок
+                            if (headerRow != null) {
+                                Row newHeaderRow = mergedSheet.createRow(rowIndex++);
+                                copyRow(headerRow, newHeaderRow); // Копируем заголовок
                             }
+                            isHeaderCopied = true; // Заголовок скопирован
+                        }
+
+                        // Пройдем по всем строкам в текущем листе, начиная со второй строки
+                        for (int i = 1; i < sheet.getPhysicalNumberOfRows(); i++) {
+                            Row row = sheet.getRow(i);
+                            Row newRow = mergedSheet.createRow(rowIndex++);
+                            copyRow(row, newRow); // Копируем данные строки
                         }
                     }
                 }
@@ -142,6 +129,35 @@ public class HelloController {
 
             // Записываем объединённую книгу в файл
             mergedWorkbook.write(fos);
+        }
+    }
+
+    private void copyRow(Row sourceRow, Row targetRow) {
+        // Копируем данные из каждой ячейки
+        for (int i = 0; i < sourceRow.getPhysicalNumberOfCells(); i++) {
+            org.apache.poi.ss.usermodel.Cell sourceCell = sourceRow.getCell(i);
+            org.apache.poi.ss.usermodel.Cell targetCell = targetRow.createCell(i);
+
+            // В зависимости от типа ячейки копируем данные
+            switch (sourceCell.getCellType()) {
+                case STRING:
+                    targetCell.setCellValue(sourceCell.getStringCellValue());
+                    break;
+                case NUMERIC:
+                    targetCell.setCellValue(sourceCell.getNumericCellValue());
+                    break;
+                case BOOLEAN:
+                    targetCell.setCellValue(sourceCell.getBooleanCellValue());
+                    break;
+                case FORMULA:
+                    targetCell.setCellFormula(sourceCell.getCellFormula());
+                    break;
+                case BLANK:
+                    // Если ячейка пустая, не нужно ничего делать
+                    break;
+                default:
+                    throw new IllegalArgumentException("Неизвестный тип ячейки: " + sourceCell.getCellType());
+            }
         }
     }
 
