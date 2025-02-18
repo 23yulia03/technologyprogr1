@@ -142,9 +142,26 @@ public class HelloController {
                 Sheet sheet = workbook.createSheet("Word Content");
                 int rowIndex = 0;
 
-                for (XWPFParagraph paragraph : document.getParagraphs()) {
-                    Row row = sheet.createRow(rowIndex++);
-                    row.createCell(0).setCellValue(paragraph.getText());
+                // Обрабатываем таблицы в Word
+                for (XWPFTable table : document.getTables()) {
+                    for (XWPFTableRow row : table.getRows()) {
+                        Row excelRow = sheet.createRow(rowIndex++);
+                        int cellIndex = 0;
+
+                        for (XWPFTableCell cell : row.getTableCells()) {
+                            Cell excelCell = excelRow.createCell(cellIndex++);
+                            excelCell.setCellValue(cell.getText());
+                        }
+                    }
+                }
+
+                // Обрабатываем обычные абзацы, если таблиц нет
+                if (document.getTables().isEmpty()) {
+                    for (XWPFParagraph paragraph : document.getParagraphs()) {
+                        Row excelRow = sheet.createRow(rowIndex++);
+                        Cell excelCell = excelRow.createCell(0);
+                        excelCell.setCellValue(paragraph.getText());
+                    }
                 }
 
                 try (FileOutputStream fos = new FileOutputStream(excelFile)) {
@@ -168,11 +185,24 @@ public class HelloController {
                      Workbook workbook = new XSSFWorkbook(fis)) {
 
                     for (Sheet sheet : workbook) {
+                        // Создаем таблицу в Word
+                        XWPFTable table = document.createTable();
+
+                        // Проходим по строкам Excel
                         for (Row row : sheet) {
-                            XWPFParagraph paragraph = document.createParagraph();
-                            XWPFRun run = paragraph.createRun();
+                            // Создаем новую строку в таблице Word
+                            XWPFTableRow tableRow = table.createRow();
+
+                            // Проходим по ячейкам Excel
                             for (Cell cell : row) {
-                                run.setText(cell.toString() + " ");
+                                // Добавляем ячейку в строку таблицы Word
+                                XWPFTableCell tableCell = tableRow.getCell(cell.getColumnIndex());
+                                if (tableCell == null) {
+                                    tableCell = tableRow.addNewTableCell();
+                                }
+
+                                // Записываем значение ячейки Excel в ячейку таблицы Word
+                                tableCell.setText(cell.toString());
                             }
                         }
                     }
