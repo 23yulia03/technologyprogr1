@@ -166,22 +166,33 @@ public class HelloController {
         String[] filePaths = fileList.toString().split("\n");
 
         try (XWPFDocument document = new XWPFDocument(); FileOutputStream fos = new FileOutputStream(outputFile)) {
+            boolean isHeaderWritten = false; // Флаг для отслеживания, был ли заголовок записан
+
             for (String filePath : filePaths) {
                 File excelFile = new File(filePath);
                 try (FileInputStream fis = new FileInputStream(excelFile); Workbook workbook = new XSSFWorkbook(fis)) {
                     for (Sheet sheet : workbook) {
-                        document.createParagraph().createRun().setText("Таблица: " + sheet.getSheetName());
+                        if (!isHeaderWritten) {
+                            // Добавляем заголовок только один раз для первого листа
+                            document.createParagraph().createRun().setText("Таблица: " + sheet.getSheetName());
+                            isHeaderWritten = true;
+                        }
+
                         XWPFTable table = document.createTable();
+                        boolean isHeaderRow = true; // Флаг для отслеживания первой строки (заголовка)
 
                         for (Row row : sheet) {
                             XWPFTableRow tableRow = table.createRow();
 
-                            // Удаляем автоматически созданную первую ячейку
-                            tableRow.getTableCells().clear();
-
-                            for (org.apache.poi.ss.usermodel.Cell cell : row) {
-                                XWPFTableCell tableCell = tableRow.addNewTableCell(); // Создаём новую ячейку
-                                tableCell.setText(cell.toString().trim()); // Убираем лишние пробелы
+                            // Пропускаем первую строку при создании таблицы, чтобы избежать дублирования заголовков
+                            if (isHeaderRow) {
+                                isHeaderRow = false; // Заголовок уже записан
+                            } else {
+                                // Копируем данные из всех ячеек в строках
+                                for (org.apache.poi.ss.usermodel.Cell cell : row) {
+                                    XWPFTableCell tableCell = tableRow.addNewTableCell();
+                                    tableCell.setText(cell.toString().trim()); // Убираем лишние пробелы
+                                }
                             }
                         }
                     }
@@ -190,6 +201,7 @@ public class HelloController {
             document.write(fos);
         }
     }
+
 
 
 
