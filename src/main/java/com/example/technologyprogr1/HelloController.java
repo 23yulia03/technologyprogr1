@@ -179,20 +179,23 @@ public class HelloController {
                         }
 
                         XWPFTable table = document.createTable();
-                        boolean isHeaderRow = true; // Флаг для отслеживания первой строки (заголовка)
+
+                        boolean isFirstRow = true; // Флаг для отслеживания первой строки (заголовка)
 
                         for (Row row : sheet) {
                             XWPFTableRow tableRow = table.createRow();
 
-                            // Пропускаем первую строку при создании таблицы, чтобы избежать дублирования заголовков
-                            if (isHeaderRow) {
-                                isHeaderRow = false; // Заголовок уже записан
-                            } else {
-                                // Копируем данные из всех ячеек в строках
-                                for (org.apache.poi.ss.usermodel.Cell cell : row) {
-                                    XWPFTableCell tableCell = tableRow.addNewTableCell();
-                                    tableCell.setText(cell.toString().trim()); // Убираем лишние пробелы
-                                }
+                            // Если это первая строка, то это заголовок таблицы
+                            if (isFirstRow) {
+                                isFirstRow = false;
+                                // Пропускаем первую строку, не добавляем пустые ячейки
+                                continue;
+                            }
+
+                            // Копируем данные из всех ячеек в строках
+                            for (org.apache.poi.ss.usermodel.Cell cell : row) {
+                                XWPFTableCell tableCell = tableRow.createCell(); // Создаем ячейку
+                                tableCell.setText(cell.toString().trim()); // Убираем лишние пробелы
                             }
                         }
                     }
@@ -201,6 +204,7 @@ public class HelloController {
             document.write(fos);
         }
     }
+
 
 
 
