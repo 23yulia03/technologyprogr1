@@ -29,6 +29,10 @@ public class HelloController {
     private File outputFile;
     private Stage stage;
 
+    // Ожидаемые заголовки и количество столбцов
+    private final List<String> expectedHeaders = List.of("Номер", "Цена", "Количество"); // Замените на реальные заголовки
+    private final int expectedColumns = expectedHeaders.size();
+
     public void setStage(Stage stage) {
         this.stage = stage;
     }
@@ -148,8 +152,102 @@ public class HelloController {
     }
 
     private void convertExcelToWord() throws IOException {
-        List<String> data = ExcelReader.readExcelFiles(selectedFiles);
-        WordWriter.writeToWord(data, outputFile);
+        try (XWPFDocument document = new XWPFDocument()) {
+            XWPFTable table = document.createTable(); // Создаем таблицу сразу
+            if (table.getRows().size() > 0) {
+                table.removeRow(0); // Удаляем дефолтную строку, если она есть
+            }
+            createHeaderRow(table, expectedHeaders); // Заполняем заголовки
+
+            boolean isFirstFile = true;
+
+            for (File file : selectedFiles) {
+                try (FileInputStream fis = new FileInputStream(file);
+                     Workbook workbook = new XSSFWorkbook(fis)) {
+
+                    Sheet sheet = workbook.getSheetAt(0);
+                    if (!validateColumns(sheet, expectedColumns, expectedHeaders)) {
+                        showAlert("Ошибка", "Недопустимый заголовок в: " + file.getName());
+                        continue;
+                    }
+
+                    for (int i = 0; i <= sheet.getLastRowNum(); i++) {
+                        Row row = sheet.getRow(i);
+                        if (row == null) continue;
+
+                        if (!isFirstFile && i == 0) continue; // Пропускаем заголовки после первого файла
+
+                        XWPFTableRow tableRow = table.createRow();
+                        for (int j = 0; j < expectedColumns; j++) {
+                            Cell cell = row.getCell(j, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+                            String value = cellToString(cell);
+
+                            // Если ячейка не существует, создаем ее
+                            if (tableRow.getCell(j) == null) {
+                                tableRow.addNewTableCell();
+                            }
+                            tableRow.getCell(j).setText(value);
+                        }
+                    }
+                    isFirstFile = false;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    showAlert("Ошибка", "Ошибка при чтении файла: " + file.getName() + " - " + e.getMessage());
+                }
+            }
+
+            try (FileOutputStream out = new FileOutputStream(outputFile)) {
+                document.write(out);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Ошибка", "Ошибка при конвертации в Word: " + e.getMessage());
+        }
+    }
+
+    private void createHeaderRow(XWPFTable table, List<String> headers) {
+        XWPFTableRow headerRow = table.createRow();
+        for (int i = 0; i < headers.size(); i++) {
+            if (headerRow.getCell(i) == null) {
+                headerRow.addNewTableCell();
+            }
+            headerRow.getCell(i).setText(headers.get(i));
+        }
+    }
+
+    private String cellToString(Cell cell) {
+        if (cell == null) return "";
+        switch (cell.getCellType()) {
+            case STRING: return cell.getStringCellValue();
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    return cell.getDateCellValue().toString();
+                } else {
+                    double value = cell.getNumericCellValue();
+                    if (value == (long) value) {
+                        return String.format("%d", (long) value);
+                    } else {
+                        return String.valueOf(value);
+                    }
+                }
+            case BOOLEAN: return String.valueOf(cell.getBooleanCellValue());
+            default: return "";
+        }
+    }
+
+    private boolean validateColumns(Sheet sheet, int expectedColumns, List<String> expectedHeaders) {
+        Row headerRow = sheet.getRow(0);
+        if (headerRow == null || headerRow.getLastCellNum() < expectedColumns) return false;
+
+        for (int i = 0; i < expectedHeaders.size(); i++) {
+            Cell cell = headerRow.getCell(i, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+            String actualHeader = cellToString(cell).trim();
+            String expectedHeader = expectedHeaders.get(i).trim();
+            if (!actualHeader.equals(expectedHeader)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @FXML
@@ -192,4 +290,3 @@ public class HelloController {
         alert.showAndWait();
     }
 }
-

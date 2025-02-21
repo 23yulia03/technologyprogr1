@@ -32,5 +32,3 @@ public class ExcelReader {
         return data;
     }
 }
-
-
