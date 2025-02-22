@@ -8,7 +8,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.awt.*;
-import java.awt.TextArea;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,15 +16,13 @@ import java.util.List;
 import java.util.Optional;
 
 public class HelloController {
+
     @FXML
     private Label fileListLabel;
     @FXML
     private Label folderPathLabel;
     @FXML
-    private TextArea textArea; // Поле для вывода текста в GUI
-    @FXML
     private Label statusLabel;
-
     private List<File> selectedFiles = new ArrayList<>();
     private File outputFile;
     private Stage stage;
@@ -42,13 +39,7 @@ public class HelloController {
         if (files != null) {
             selectedFiles.clear();
             selectedFiles.addAll(files);
-
-            // Отображаем полный путь к выбранным файлам
-            StringBuilder paths = new StringBuilder("Выбранные файлы:\n");
-            for (File file : files) {
-                paths.append(file.getAbsolutePath()).append("\n");
-            }
-            fileListLabel.setText(paths.toString());
+            updateFileListLabel();
         }
     }
 
@@ -56,21 +47,34 @@ public class HelloController {
     private void handleSelectFilesButtonAction() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel Files", "*.xlsx"));
-        selectedFiles = fileChooser.showOpenMultipleDialog(null);
-        updateStatus("Было выбрано " + (selectedFiles != null ? selectedFiles.size() : 0) + " файла");
-    }
-
-    private void updateStatus(String message) {
-        statusLabel.setText(message);
+        List<File> files = fileChooser.showOpenMultipleDialog(stage);
+        if (files != null) {
+            selectedFiles.clear();
+            selectedFiles.addAll(files);
+            updateFileListLabel();
+        }
     }
 
     @FXML
     private void handleSelectFolderButtonAction() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        File selectedDirectory = directoryChooser.showDialog(null);
+        File selectedDirectory = directoryChooser.showDialog(stage);
         if (selectedDirectory != null) {
-            selectedFiles = Arrays.asList(selectedDirectory.listFiles((dir, name) -> name.endsWith(".xlsx")));
-            updateStatus("Было выбрано " + selectedFiles.size() + " файлов из папки");
+            selectedFiles.clear();
+            selectedFiles.addAll(Arrays.asList(selectedDirectory.listFiles((dir, name) -> name.endsWith(".xlsx"))));
+            updateFileListLabel();
+        }
+    }
+
+    private void updateFileListLabel() {
+        if (selectedFiles.isEmpty()) {
+            fileListLabel.setText("Выбранные файлы: Нет файлов");
+        } else {
+            StringBuilder paths = new StringBuilder("Выбранные файлы:\n");
+            for (File file : selectedFiles) {
+                paths.append(file.getAbsolutePath()).append("\n");
+            }
+            fileListLabel.setText(paths.toString());
         }
     }
 
@@ -83,7 +87,6 @@ public class HelloController {
                 new FileChooser.ExtensionFilter("Excel Files (*.xlsx)", "*.xlsx"),
                 new FileChooser.ExtensionFilter("Word Documents (*.docx)", "*.docx")
         );
-
         outputFile = fileChooser.showSaveDialog(stage);
         if (outputFile != null) {
             folderPathLabel.setText("Файл будет сохранен как: " + outputFile.getAbsolutePath());
@@ -141,3 +144,4 @@ public class HelloController {
         alert.showAndWait();
     }
 }
+
