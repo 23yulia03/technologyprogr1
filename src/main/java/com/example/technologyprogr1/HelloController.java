@@ -38,7 +38,13 @@ public class HelloController {
         if (files != null) {
             selectedFiles.clear();
             selectedFiles.addAll(files);
-            fileListLabel.setText("Выбранные файлы:\n" + files.size());
+
+            // Отображаем полный путь к выбранным файлам
+            StringBuilder paths = new StringBuilder("Выбранные файлы:\n");
+            for (File file : files) {
+                paths.append(file.getAbsolutePath()).append("\n");
+            }
+            fileListLabel.setText(paths.toString());
         }
     }
 
