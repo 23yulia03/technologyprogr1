@@ -4,20 +4,39 @@ import org.apache.poi.xwpf.usermodel.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 public class WordWriter {
-    public static void writeToWord(List<String> data, File outputFile) {
+    public static void writeToWord(List<String> data, File outputFile) throws IOException {
         try (XWPFDocument document = new XWPFDocument();
              FileOutputStream out = new FileOutputStream(outputFile)) {
-            for (String line : data) {
-                XWPFParagraph paragraph = document.createParagraph();
-                XWPFRun run = paragraph.createRun();
-                run.setText(line);
+
+            // Определяем количество колонок по первой строке
+            int columnCount = data.isEmpty() ? 1 : data.get(0).split(" \\| ").length;
+
+            // Создаем таблицу
+            XWPFTable table = document.createTable();
+
+            // Если таблица пустая, удалим первую строку, которая создается по умолчанию
+            if (table.getRows().size() > 0) {
+                table.removeRow(0);
             }
+
+            // Заполняем таблицу данными
+            for (String rowText : data) {
+                XWPFTableRow tableRow = table.createRow();
+                String[] cells = rowText.split(" \\| ");
+
+                for (int i = 0; i < columnCount; i++) {
+                    XWPFTableCell cell = i < tableRow.getTableCells().size()
+                            ? tableRow.getCell(i)
+                            : tableRow.addNewTableCell();
+                    cell.setText(i < cells.length ? cells[i] : ""); // Заполняем ячейки
+                }
+            }
+
             document.write(out);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }
