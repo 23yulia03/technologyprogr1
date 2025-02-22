@@ -3,6 +3,7 @@ package com.example.technologyprogr1;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -11,6 +12,7 @@ import java.awt.TextArea;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +23,8 @@ public class HelloController {
     private Label folderPathLabel;
     @FXML
     private TextArea textArea; // Поле для вывода текста в GUI
+    @FXML
+    private Label statusLabel;
 
     private List<File> selectedFiles = new ArrayList<>();
     private File outputFile;
@@ -45,6 +49,28 @@ public class HelloController {
                 paths.append(file.getAbsolutePath()).append("\n");
             }
             fileListLabel.setText(paths.toString());
+        }
+    }
+
+    @FXML
+    private void handleSelectFilesButtonAction() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel Files", "*.xlsx"));
+        selectedFiles = fileChooser.showOpenMultipleDialog(null);
+        updateStatus("Было выбрано " + (selectedFiles != null ? selectedFiles.size() : 0) + " файла");
+    }
+
+    private void updateStatus(String message) {
+        statusLabel.setText(message);
+    }
+
+    @FXML
+    private void handleSelectFolderButtonAction() {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        File selectedDirectory = directoryChooser.showDialog(null);
+        if (selectedDirectory != null) {
+            selectedFiles = Arrays.asList(selectedDirectory.listFiles((dir, name) -> name.endsWith(".xlsx")));
+            updateStatus("Было выбрано " + selectedFiles.size() + " файлов из папки");
         }
     }
 
@@ -104,22 +130,6 @@ public class HelloController {
             }
         } else {
             showAlert("Ошибка", "Файл не существует.");
-        }
-    }
-
-    @FXML
-    protected void handleViewFile() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Открыть файл для просмотра");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Word Files", "*.docx"));
-        File file = fileChooser.showOpenDialog(null);
-        if (file != null) {
-            try {
-                List<String> content = WordReader.readWordFile(file);
-                textArea.setText(String.join("\n", content));
-            } catch (IOException e) {
-                textArea.appendText("Ошибка при чтении файла: " + e.getMessage() + "\n");
-            }
         }
     }
 

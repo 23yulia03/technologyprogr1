@@ -11,6 +11,8 @@
     <!-- Раздел выбора файлов -->
     <VBox spacing="15" alignment="CENTER" style="-fx-background-color: #f0f0f0; -fx-padding: 15; -fx-border-radius: 10; -fx-background-radius: 10;">
         <Label style="-fx-font-size: 16px; -fx-text-fill: #555555;" text="Шаг 1: Выберите файлы для конвертации:" />
+        <Button text="Выбрать файл" onAction="#handleSelectFilesButtonAction"/>
+        <Button text="Выбрать папку" onAction="#handleSelectFolderButtonAction"/>
         <Button onAction="#onSelectFiles" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Выбрать файлы" />
         <Label fx:id="fileListLabel" style="-fx-font-size: 14px; -fx-text-fill: #555;" text="Выбранные файлы: Нет файлов" />
     </VBox>
