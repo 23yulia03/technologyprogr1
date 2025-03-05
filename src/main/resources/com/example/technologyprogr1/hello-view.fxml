@@ -4,36 +4,37 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Pos?>
 
-<VBox alignment="CENTER" prefHeight="500.0" prefWidth="600.0" spacing="30" style="-fx-background-color: #ffffff; -fx-padding: 30;" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.technologyprogr1.HelloController">
+<VBox alignment="CENTER" prefHeight="500.0" prefWidth="600.0" spacing="10" style="-fx-background-color: #ffffff; -fx-padding: 30;" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.technologyprogr1.HelloController">
     <!-- Заголовок -->
     <Label style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333333; -fx-margin-bottom: 20px;" text="Конвертер Excel в Excel/Word" />
 
     <!-- Раздел выбора формата -->
-    <VBox spacing="20" alignment="CENTER" style="-fx-background-color: #f9f9f9; -fx-padding: 20; -fx-border-radius: 10; -fx-background-radius: 10;">
+    <VBox spacing="10" alignment="CENTER" style="-fx-background-color: #f9f9f9; -fx-padding: 20; -fx-border-radius: 10; -fx-background-radius: 10;">
         <Label style="-fx-font-size: 18px; -fx-text-fill: #555;" text="Шаг 1: Выберите формат итогового файла" />
         <Button onAction="#onSelectFormat" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Выбрать формат" />
         <Label fx:id="formatLabel" style="-fx-font-size: 14px; -fx-text-fill: #555;" text="Выбранный формат: Не выбран" />
     </VBox>
 
     <!-- Раздел выбора файлов/папки для конвертации -->
-    <VBox spacing="20" alignment="CENTER" style="-fx-background-color: #f9f9f9; -fx-padding: 20; -fx-border-radius: 10; -fx-background-radius: 10;">
+    <VBox spacing="10" alignment="CENTER" style="-fx-background-color: #f9f9f9; -fx-padding: 20; -fx-border-radius: 10; -fx-background-radius: 10;">
         <Label style="-fx-font-size: 18px; -fx-text-fill: #555;" text="Шаг 2: Выберите файлы или папку для конвертации" />
-        <HBox spacing="20" alignment="CENTER">
+        <HBox spacing="10" alignment="CENTER">
             <Button onAction="#onSelectFiles" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Выбрать файлы Excel" />
             <Button onAction="#onSelectFolder" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Выбрать папку с Excel" />
         </HBox>
-        <TextArea fx:id="fileListLabel" editable="false" wrapText="true" prefRowCount="5" prefWidth="500" />
+        <!-- Область для отображения выбранных файлов с расширенным размером -->
+        <Label fx:id="fileListLabel" style="-fx-font-size: 14px; -fx-text-fill: #555; -fx-max-width: 500px; -fx-pref-width: 500px; -fx-wrap-text: true;" text="Выбранные файлы: Нет файлов"/>
     </VBox>
 
     <!-- Раздел с выбором папки для сохранения -->
-    <VBox spacing="20" alignment="CENTER" style="-fx-background-color: #f9f9f9; -fx-padding: 20; -fx-border-radius: 10; -fx-background-radius: 10;">
+    <VBox spacing="10" alignment="CENTER" style="-fx-background-color: #f9f9f9; -fx-padding: 20; -fx-border-radius: 10; -fx-background-radius: 10;">
         <Label style="-fx-font-size: 18px; -fx-text-fill: #555;" text="Шаг 3: Выберите место сохранения и имя файла" />
         <Button onAction="#onSelectOutputFile" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Выбрать место сохранения" />
         <Label fx:id="folderPathLabel" style="-fx-font-size: 14px; -fx-text-fill: #555;" text="Папка для сохранения: Не выбрана" />
     </VBox>
 
     <!-- Раздел с действиями -->
-    <VBox spacing="15" alignment="CENTER" style="-fx-background-color: #f9f9f9; -fx-padding: 20; -fx-border-radius: 10; -fx-background-radius: 10;">
+    <VBox spacing="10" alignment="CENTER" style="-fx-background-color: #f9f9f9; -fx-padding: 20; -fx-border-radius: 10; -fx-background-radius: 10;">
         <Button onAction="#onConvert" style="-fx-background-color: #FF9800; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Начать конвертацию" />
         <Button onAction="#onOpenFile" style="-fx-background-color: #9C27B0; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Открыть папку с результатами" />
     </VBox>

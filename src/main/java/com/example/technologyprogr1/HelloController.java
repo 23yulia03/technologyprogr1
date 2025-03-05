@@ -17,7 +17,7 @@ import java.util.Optional;
 public class HelloController {
 
     @FXML
-    private TextArea fileListLabel; // Метка для отображения выбранных файлов
+    private Label fileListLabel; // Метка для отображения выбранных файлов
     @FXML
     private Label folderPathLabel; // Метка для отображения пути сохранения
     @FXML
