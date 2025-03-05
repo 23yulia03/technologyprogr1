@@ -23,7 +23,7 @@
             <Button onAction="#onSelectFolder" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Выбрать папку с Excel" />
         </HBox>
         <!-- Область для отображения выбранных файлов с расширенным размером -->
-        <Label fx:id="fileListLabel" style="-fx-font-size: 14px; -fx-text-fill: #555; -fx-max-width: 500px; -fx-pref-width: 500px; -fx-wrap-text: true;" text="Выбранные файлы: Нет файлов"/>
+        <Label fx:id="fileListLabel" style="-fx-font-size: 14px; -fx-text-fill: #555; -fx-wrap-text: true;" text="Выбранные файлы: Нет файлов"/>
     </VBox>
 
     <!-- Раздел с выбором папки для сохранения -->
