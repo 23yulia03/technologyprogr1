@@ -8,26 +8,27 @@
     <!-- Заголовок -->
     <Label style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333333; -fx-margin-bottom: 20px;" text="Конвертер Excel в Excel/Word" />
 
+    <!-- Раздел выбора формата -->
+    <VBox spacing="20" alignment="CENTER" style="-fx-background-color: #f9f9f9; -fx-padding: 20; -fx-border-radius: 10; -fx-background-radius: 10;">
+        <Label style="-fx-font-size: 18px; -fx-text-fill: #555;" text="Шаг 1: Выберите формат итогового файла" />
+        <Button onAction="#onSelectFormat" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Выбрать формат" />
+        <Label fx:id="formatLabel" style="-fx-font-size: 14px; -fx-text-fill: #555;" text="Выбранный формат: Не выбран" />
+    </VBox>
+
     <!-- Раздел выбора файлов/папки для конвертации -->
     <VBox spacing="20" alignment="CENTER" style="-fx-background-color: #f9f9f9; -fx-padding: 20; -fx-border-radius: 10; -fx-background-radius: 10;">
-        <Label style="-fx-font-size: 18px; -fx-text-fill: #555;" text="Шаг 1: Выберите файлы или папку для конвертации" />
-
-        <!-- Кнопки выбора файлов или папки -->
+        <Label style="-fx-font-size: 18px; -fx-text-fill: #555;" text="Шаг 2: Выберите файлы или папку для конвертации" />
         <HBox spacing="20" alignment="CENTER">
-            <Button onAction="#handleSelectFilesButtonAction" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Выбрать файлы" />
-            <Button onAction="#handleSelectFolderButtonAction" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Выбрать папку" />
+            <Button onAction="#onSelectFiles" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Выбрать файлы Excel" />
+            <Button onAction="#onSelectFolder" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Выбрать папку с Excel" />
         </HBox>
-
-        <!-- Информация о выбранных файлах -->
-        <Label fx:id="fileListLabel" style="-fx-font-size: 14px; -fx-text-fill: #555;" text="Выбранные файлы: Нет файлов" />
+        <TextArea fx:id="fileListLabel" editable="false" wrapText="true" prefRowCount="5" prefWidth="500" />
     </VBox>
 
     <!-- Раздел с выбором папки для сохранения -->
     <VBox spacing="20" alignment="CENTER" style="-fx-background-color: #f9f9f9; -fx-padding: 20; -fx-border-radius: 10; -fx-background-radius: 10;">
-        <Label style="-fx-font-size: 18px; -fx-text-fill: #555;" text="Шаг 2: Выберите папку для сохранения результатов" />
-
-        <!-- Кнопка выбора папки для сохранения -->
-        <Button onAction="#onSelectFolder" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Выбрать папку для сохранения" />
+        <Label style="-fx-font-size: 18px; -fx-text-fill: #555;" text="Шаг 3: Выберите место сохранения и имя файла" />
+        <Button onAction="#onSelectOutputFile" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-border-radius: 5; -fx-background-radius: 5;" text="Выбрать место сохранения" />
         <Label fx:id="folderPathLabel" style="-fx-font-size: 14px; -fx-text-fill: #555;" text="Папка для сохранения: Не выбрана" />
     </VBox>
 
@@ -39,6 +40,6 @@
 
     <!-- Подсказка -->
     <HBox spacing="10" alignment="CENTER">
-        <Label style="-fx-font-size: 14px; -fx-text-fill: #888;" text="Чтобы начать конвертацию, выберите файлы и папку для сохранения." />
+        <Label style="-fx-font-size: 14px; -fx-text-fill: #888;" text="Чтобы начать конвертацию, выберите формат, файлы и место сохранения." />
     </HBox>
 </VBox>
